@@ -69,6 +69,40 @@ training_file_path = ''
 
 class line_detection:
 
+    def initialize_parameters(self):
+        if rospy.has_param("global_threshold"):
+            global_threshold = rospy.get_param("global_threshold")
+        if rospy.has_param("global_threshold_factor"):
+            global_threshold = rospy.get_param("global_threshold_factor")
+        if rospy.has_param("adaptive_threshold_block_size"):
+            global_threshold = rospy.get_param("adaptive_threshold_block_size")
+        if rospy.has_param("adaptive_threshold_C"):
+            global_threshold = rospy.get_param("adaptive_threshold_C")
+        if rospy.has_param("blur_size"):
+            global_threshold = rospy.get_param("blur_size")
+        if rospy.has_param("canny_threshold"):
+            global_threshold = rospy.get_param("canny_threshold")
+        if rospy.has_param("max_erode_iterations"):
+            global_threshold = rospy.get_param("max_erode_iterations")
+        if rospy.has_param("bandpass_low_cutoff"):
+            global_threshold = rospy.get_param("bandpass_low_cutoff")
+        if rospy.has_param("bandpass_high_cutoff"):
+            global_threshold = rospy.get_param("bandpass_high_cutoff")
+        if rospy.has_param("hue_low"):
+            global_threshold = rospy.get_param("hue_low")
+        if rospy.has_param("hue_high"):
+            global_threshold = rospy.get_param("hue_high")
+        if rospy.has_param("saturation_low"):
+            global_threshold = rospy.get_param("saturation_low")
+        if rospy.has_param("saturation_high"):
+            global_threshold = rospy.get_param("saturation_high")
+        if rospy.has_param("value_low"):
+            global_threshold = rospy.get_param("value_low")
+        if rospy.has_param("value_high"):
+            global_threshold = rospy.get_param("value_high")
+        if rospy.has_param("backprojection_threshold"):
+            global_threshold = rospy.get_param("backprojection_threshold")
+
     def __init__(self):
 
         # initialize ROS stuff        
@@ -76,6 +110,8 @@ class line_detection:
 
         global training_file_path # global keyword needed because it's modifying the variable
         training_file_path = rospack.get_path('line_detection') + '/misc/training_images/training_for_backprojection_1.png'
+
+        # self.initialize_parameters()
 
         # set publisher and subscriber
         ## TODO find out what name the topic should have

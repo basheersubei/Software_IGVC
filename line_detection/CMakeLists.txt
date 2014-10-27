@@ -27,3 +27,4 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 #target_link_libraries(line_detection_test ${catkin_LIBRARIES})
 
 #add_dependencies(keyboard_teleop base_controller_gencpp)
+#add_dependencies(example_node ${PROJECT_NAME}_gencfg)
