@@ -1,8 +1,9 @@
 #!/bin/bash
 set -ev
 
+export DEBIAN_FRONTEND=noninteractive
 export UBUNTU_CODENAME=`lsb_release -s -c`
-export ROS_VERSION=hydro
+export ROS_VERSION=indigo
 
 echo "Ubuntu codename: $UBUNTU_CODENAME"
 echo "ROS version: $ROS_VERSION"
@@ -20,15 +21,19 @@ fi
 
 git submodule update --init --recursive
 
-sudo sh -c "echo \"deb http://packages.ros.org/ros/ubuntu $UBUNTU_CODENAME main\" > /etc/apt/sources.list.d/ros-latest.list"
+
+
+sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu trusty main" > /etc/apt/sources.list.d/ros-latest.list'
 wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
 
-sudo apt-get update -qq
-sudo apt-get install -qq doxygen doxygen-latex libboost-all-dev libeigen3-dev liblapack-dev libblas-dev gfortran python-dev python-sphinx python-numpy libbullet-dev libdmtx-dev libzbar-dev
+sudo apt-get --yes --force-yes clean -qq && sudo apt-get --yes --force-yes update -qq
+sudo apt-get -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confnew" --yes --force-yes upgrade -qq
+
+sudo apt-get install --yes --force-yes -qq doxygen doxygen-latex libboost-all-dev libeigen3-dev liblapack-dev libblas-dev gfortran python-dev python-sphinx python-numpy libdmtx-dev libzbar-dev
 
 
-sudo apt-get install ros-$ROS_VERSION-ros-base ros-$ROS_VERSION-opencv2 ros-$ROS_VERSION-image-common ros-$ROS_VERSION-image-pipeline ros-$ROS_VERSION-dynamic-reconfigure ros-$ROS_VERSION-nodelet ros-$ROS_VERSION-tf ros-$ROS_VERSION-resource-retriever ros-$ROS_VERSION-angles ros-$ROS_VERSION-rosbag ros-$ROS_VERSION-message-filters ros-$ROS_VERSION-common-msgs ros-$ROS_VERSION-move-base-msgs ros-$ROS_VERSION-rosdoc-lite ros-$ROS_VERSION-visp \
-    python-rosinstall python-rosdep
+sudo apt-get install --yes --force-yes ros-$ROS_VERSION-ros-base ros-$ROS_VERSION-opencv3 ros-$ROS_VERSION-image-common ros-$ROS_VERSION-image-pipeline ros-$ROS_VERSION-dynamic-reconfigure ros-$ROS_VERSION-nodelet ros-$ROS_VERSION-tf ros-$ROS_VERSION-resource-retriever ros-$ROS_VERSION-angles ros-$ROS_VERSION-rosbag ros-$ROS_VERSION-message-filters ros-$ROS_VERSION-common-msgs ros-$ROS_VERSION-move-base-msgs ros-$ROS_VERSION-rosdoc-lite ros-$ROS_VERSION-visp \
+    python-rosinstall python-rosdep ros-$ROS_VERSION-roslint
 
 rosinstall `pwd` `pwd` /opt/ros/$ROS_VERSION/
 . setup.sh
