@@ -56,10 +56,14 @@ class line_detection:
 
     histogram_dimension = rospy.get_param(rospy.get_namespace() + node_name + "/histogram_dimension")
     
-    # initializes 2d histogram
-    # cumulative_histogram = np.zeros((histogram_dimension,histogram_dimension,histogram_dimension))
+    # initializes 3d histogram
+    cumulative_histogram = np.zeros((histogram_dimension,histogram_dimension,histogram_dimension), dtype=float)
     # cumulative_histogram = np.zeros((histogram_dimension,histogram_dimension))
-    cumulative_histogram = np.zeros((180,256), dtype=float)
+    # cumulative_histogram = np.zeros((180,256), dtype=float)
+
+    # the V channel value at which to view the 2d projection of the 3d histogram.
+    # This value must be within the bounds of the 3d histogram array (less than histogram_dimension)
+    histogram_view_value = 25
 
     # holds total number of frames we processed already
     frames_processed = 0
@@ -146,21 +150,21 @@ class line_detection:
         # convert from BGR to HSV
         hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
 
-        # histogram = cv2.calcHist([hsv],
-        #     [0,1,2],
-        #     None,
-        #     [self.histogram_dimension,self.histogram_dimension,self.histogram_dimension],
-        #     [0,180,0,256,0,256])
         histogram = cv2.calcHist([hsv],
-            [0,1],
+            [0,1,2],
             None,
-            [180,256],
-            [0,179,0,255])
+            [self.histogram_dimension,self.histogram_dimension,self.histogram_dimension],
+            [0,179,0,255,0,255])
+        # histogram = cv2.calcHist([hsv],
+        #     [0,1],
+        #     None,
+        #     [180,256],
+        #     [0,179,0,255])
 
 
         # we'll just take a slice (at a V channel value) of the 3d histogram and plot it in 2d for debugging
-        # current_histogram_plot = histogram[:,:,self.histogram_view_value]
-        current_histogram_plot = histogram
+        current_histogram_plot = histogram[:,:,self.histogram_view_value]
+        # current_histogram_plot = histogram
 
 
         # #### Create CompressedImage to publish current histogram (for debugging) ####
@@ -178,8 +182,8 @@ class line_detection:
         self.cumulative_histogram += histogram
 
         # we'll just take a slice (at a V channel value) of the 3d histogram and plot it in 2d for debugging
-        # cumulative_histogram_plot = self.cumulative_histogram[:,:,self.histogram_view_value]
-        cumulative_histogram_plot = self.cumulative_histogram
+        cumulative_histogram_plot = self.cumulative_histogram[:,:,self.histogram_view_value]
+        # cumulative_histogram_plot = self.cumulative_histogram
 
         # #### Create CompressedImage to publish cumulative histogram (for debugging) ####
         final_image_message = CompressedImage()
@@ -203,7 +207,7 @@ class line_detection:
         self.input_image_pub.publish(final_image_message)
 
         # now write the new cumulative histogram data to a file
-        np.savetxt(self.package_path + "/misc/training_images/histogram.txt", self.cumulative_histogram)
+        np.save(self.package_path + "/misc/training_images/histogram.txt", self.cumulative_histogram)
 
         # increment number of frames since this frame is done
         self.frames_processed += 1
@@ -212,10 +216,12 @@ class line_detection:
 
     def reconfigure_callback(self, config, level):
 
+        # TODO check if the keys exist in the config dictionary or else error
         self.roi_top_left_x = config['roi_top_left_x']
         self.roi_top_left_y = config['roi_top_left_y']
         self.roi_width = config['roi_width']
         self.roi_height = config['roi_height']
+        self.histogram_view_value = config['histogram_view_value']
 
         self.validate_parameters()
 
@@ -239,6 +245,10 @@ class line_detection:
                 self.roi_height = self.image_height - self.roi_top_left_y
             if self.roi_top_left_y < 0:
                 self.roi_top_left_y = 0
+
+        # value channel index must be within bounds of 3d histogram
+        if self.histogram_view_value >= self.histogram_dimension:
+            self.histogram_view_value = self.histogram_dimension - 1
 
 def main(args):
     # create a line_detection object

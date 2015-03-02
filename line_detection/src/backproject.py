@@ -65,8 +65,9 @@ class line_detection:
 
     histogram_dimension = rospy.get_param(rospy.get_namespace() + node_name + "/histogram_dimension")
 
-    # histogram = np.zeros((histogram_dimension,histogram_dimension,histogram_dimension))
-    histogram = np.zeros((180,256), dtype=float)
+    histogram = np.zeros((histogram_dimension,histogram_dimension,histogram_dimension), dtype=float)
+    histogram_max = np.amax(histogram)
+    # histogram = np.zeros((180,256), dtype=float)
 
     def __init__(self):
 
@@ -112,9 +113,9 @@ class line_detection:
 
         self.bridge = CvBridge()
 
-        # self.histogram = np.load(self.package_path + "/misc/training_images/histogram.txt.npy")
-        self.histogram = np.loadtxt(self.package_path + "/misc/training_images/histogram.txt")
-        cv2.normalize(self.histogram, self.histogram, 0, 255, cv2.NORM_MINMAX)
+        self.histogram = np.load(self.package_path + "/misc/training_images/histogram.txt.npy")
+        # self.histogram = np.loadtxt(self.package_path + "/misc/training_images/histogram.txt")
+        # cv2.normalize(self.histogram, self.histogram, 0, 255, cv2.NORM_MINMAX)
     # returns mask based on backprojection
     def get_backprojection_mask(self, image):
 
@@ -123,17 +124,16 @@ class line_detection:
 
         ## begin HISTOGRAM BACKPROJECTION
         # backprojection on 3d histogram
-        # backproject = cv2.calcBackProject([hsv],
-        #                           [0,1,2],
-        #                           self.histogram,
-        #                           [self.hue_low, self.hue_high, self.saturation_low, self.saturation_high, self.value_low, self.value_high],
-        #                           1)
         backproject = cv2.calcBackProject([hsv],
-                                  [0,1],
+                                  [0,1,2],
                                   self.histogram,
-                                  [self.hue_low, self.hue_high, self.saturation_low, self.saturation_high],
+                                  [self.hue_low, self.hue_high, self.saturation_low, self.saturation_high, self.value_low, self.value_high],
                                   1)
-
+        # backproject = cv2.calcBackProject([hsv],
+        #                           [0,1],
+        #                           self.histogram,
+        #                           [self.hue_low, self.hue_high, self.saturation_low, self.saturation_high],
+        #                           1)
         dst = backproject
         # Now convolute with circular disc
         disc = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (self.backprojection_kernel_size, self.backprojection_kernel_size))
@@ -141,7 +141,6 @@ class line_detection:
 
         # invert dst (because the backprojection chooses what we DON'T want)
         dst = 255 - dst
-
         return dst
         ## end HISTOGRAM BACKPROJECTION
 
