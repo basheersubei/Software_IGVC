@@ -118,6 +118,7 @@ class LaneDetection(object):
         self.gabor_theta = config['gabor_theta']
         self.gabor_lambda = config['gabor_lambda']
         self.gabor_gamma = config['gabor_gamma']
+        self.gabor_number_of_angles = config['gabor_number_of_angles']
         self.hough_rho = config['hough_rho']
         self.hough_theta = config['hough_theta']
         self.hough_threshold = config['hough_threshold']
